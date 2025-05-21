@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="mainPane" prefHeight="600.0" prefWidth="1100.0"
+            xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/23.0.1" fx:controller="org.example.topkapihazinensi.IndexController">
+
+    <!-- Top Bar -->
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #4169E1;">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="User Name" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" fx:id="usertbl" />
+            <Region HBox.hgrow="ALWAYS" />
+
+            <Button text="Log out" style="-fx-background-color: #712323; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#logout"/>
+            <Button text="X" style="-fx-background-color: red; -fx-text-fill: white; -fx-font-weight: bold;"  onAction="#onCloseBtn" />
+
+        </HBox>
+    </top>
+
+    <!-- Sidebar -->
+    <left>
+        <VBox spacing="15" style="-fx-background-color: #4169E1;">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            <Button text="Create Category"
+                    maxWidth="150"
+                    style="-fx-background-color: #ffffff; -fx-text-fill: #4169E1; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 25" onAction="#OnCreateCategoryBtnClicked"/>
+
+            <Label text="All Categories" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold" />
+
+
+<!--            this for scroll when we have a multicategories but it distrot my design for now-->
+<!--            <ScrollPane fitToWidth="true" fitToHeight="true">-->
+<!--                <content>-->
+<!--                    -->
+<!--                </content>-->
+<!--            </ScrollPane>-->
+
+            <VBox fx:id="categoryContainer" spacing="5">
+                <!-- Kategoriler yazdiracagim yerrr -->
+            </VBox>
+
+        </VBox>
+    </left>
+
+    <!-- Main Content -->
+    <center>
+        <VBox spacing="15">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Expenses & Filters -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+
+<!--                Create ex. btn-->
+                <Button text="Add Expense"
+                        maxWidth="150"
+                        style="-fx-background-color: #4169E1; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15 8 15;" onAction="#onExpenceCreateBtnClicked"/>
+<!--Rapor -->
+                <Button text="Reports"
+                        maxWidth="150"
+                        style="-fx-background-color: #934a4a; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15 8 15;" onAction="#showReportsModal"/>
+
+                <Button text="Report create"
+                        maxWidth="150"
+                        style="-fx-background-color: #2cc845; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15 8 15;" onAction="#showCreateReportModal"/>
+<!--                -->
+
+                <DatePicker promptText="From Date" fx:id="fromDatePicker" />
+                <DatePicker promptText="To Date" fx:id="toDatePicker"/>
+
+                <Button text="search"
+                        maxWidth="150"
+                        style="-fx-background-color: #454545; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; " onAction="#onSearchByDateClicked"/>
+
+            </HBox>
+
+            <VBox>
+                <Label text="Total: 00.00" fx:id="totalLbl"
+                       style="-fx-font-weight: bold; " />
+            </VBox>
+
+            <!-- Table -->
+            <AnchorPane VBox.vgrow="ALWAYS">
+                <TableView fx:id="sexpensesTable"
+                           AnchorPane.topAnchor="0.0"
+                           AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0"
+                           AnchorPane.rightAnchor="0.0"
+                           prefHeight="400">
+                    <columns>
+                        <TableColumn fx:id="descColumn" text="Description" prefWidth="400" />
+                        <TableColumn fx:id="amountColumn" text="Amount" prefWidth="200" />
+                        <TableColumn fx:id="dateColumn" text="Date" prefWidth="200" />
+                    </columns>
+                </TableView>
+            </AnchorPane>
+        </VBox>
+    </center>
+</BorderPane>
