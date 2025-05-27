@@ -5,6 +5,7 @@ module org.example.topkapihazinensi {
     requires java.desktop;
 
 
+
     opens org.example.topkapihazinensi to javafx.fxml;
     exports org.example.topkapihazinensi;
     exports org.example.topkapihazinensi.models;

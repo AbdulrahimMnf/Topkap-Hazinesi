@@ -33,8 +33,16 @@
                     maxWidth="150"
                     style="-fx-background-color: #ffffff; -fx-text-fill: #4169E1; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 25" onAction="#OnCreateCategoryBtnClicked"/>
 
-            <Label text="All Categories" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold" />
 
+
+
+
+
+<!--            <Label text="All Categories" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold"  />-->
+
+            <Button text="All Categories"
+                    onAction="#allCategoriesClick"
+                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-padding: 0;" />
 
 <!--            this for scroll when we have a multicategories but it distrot my design for now-->
 <!--            <ScrollPane fitToWidth="true" fitToHeight="true">-->
@@ -84,8 +92,19 @@
             </HBox>
 
             <VBox>
+<!--                <Label text="Total: 00.00" fx:id="totalLbl"-->
+<!--                       style="-fx-font-weight: bold; " />-->
+
+
                 <Label text="Total: 00.00" fx:id="totalLbl"
-                       style="-fx-font-weight: bold; " />
+                       style="-fx-font-size: 16px;
+              -fx-font-weight: bold;
+              -fx-text-fill: #2c3e50;
+              -fx-background-color: #ecf0f1;
+              -fx-padding: 8px 12px;
+              -fx-background-radius: 6px;
+              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);" />
+
             </VBox>
 
             <!-- Table -->
@@ -100,6 +119,8 @@
                         <TableColumn fx:id="descColumn" text="Description" prefWidth="400" />
                         <TableColumn fx:id="amountColumn" text="Amount" prefWidth="200" />
                         <TableColumn fx:id="dateColumn" text="Date" prefWidth="200" />
+<!--                        <TableColumn fx:id="deleteColumn" text="Delete" />-->
+
                     </columns>
                 </TableView>
             </AnchorPane>

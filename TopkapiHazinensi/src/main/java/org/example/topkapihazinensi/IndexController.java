@@ -15,17 +15,22 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import org.example.topkapihazinensi.models.Category;
 import org.example.topkapihazinensi.models.Expense;
 import org.example.topkapihazinensi.untils.DatabaseConnection;
 import org.example.topkapihazinensi.untils.UserSession;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 
 
 public class IndexController {
@@ -73,6 +78,8 @@ public class IndexController {
         loadExpenses();
     }
 
+
+
     @FXML
     private TableView<Expense> sexpensesTable;
 
@@ -85,14 +92,70 @@ public class IndexController {
     @FXML
     private TableColumn<Expense, String> dateColumn;
 
+    @FXML
+    private TableColumn<Expense, Button> deleteColumn;
+
+
+
+    // init table to fill it with data
     private void initializeTable() {
         descColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
+//        deleteColumn.setCellValueFactory(new PropertyValueFactory<>("delete"));
+    }
 
-        }
 
-    //-------------------------------------------------------------------------------------
+
+
+    // trying to build a clean code  -> common used function
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Info");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+
+    // Close btn listener
+    @FXML
+    protected void onCloseBtn() {
+        System.exit(0);
+    }
+
+
+
+    // Logout Function
+    @FXML
+    protected void logout(ActionEvent event) throws IOException {
+        UserSession.clearSession(); // oturumu temizle
+
+        Parent root = FXMLLoader.load(getClass().getResource("auth.fxml")); // login sayfasını yükle
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+        stage.setScene(new Scene(root)); // yeni sahneyi ayarla
+        stage.show(); // sahneyi göster
+    }
+
+
+
+
+
+    //------------------------- Categories Management Section ------------------------------------------------------------
+
+
+    @FXML
+    protected void allCategoriesClick(ActionEvent event)
+    {
+        System.out.println("clicked all categories");
+        this.selectExpenceSQL = "SELECT * FROM expenses where `user_id`=" + UserSession.getInstance().getUserId() ;
+        loadCategories();
+        loadExpenses();
+    }
+
+
+
     @FXML
     protected void OnCreateCategoryBtnClicked(ActionEvent event) {
 
@@ -188,7 +251,7 @@ public class IndexController {
     }
 
 
-    // Find Expences By categoory Id
+    // Find Expenses By category Id
     private void findById(int id) {
         this.selectExpenceSQL = "SELECT * FROM expenses WHERE `category_id` = " + id;
         loadExpenses();
@@ -220,9 +283,26 @@ public class IndexController {
         }
     }
 
-//-------------------------------------------------------------------------------------
+    //------------------------- End Categories Management Section ------------------------------------------------------------
 
+
+
+
+
+
+
+
+
+
+
+
+
+    //------------------------- Expenses Management Section ------------------------------------------------------------
+
+    // load expenses
     private void loadExpenses() {
+
+
         initializeTable();
         double sum = 0;
         ObservableList<Expense> expenseList = FXCollections.observableArrayList();
@@ -239,6 +319,14 @@ public class IndexController {
             String date = row.get("created_at").toString(); // format if needed
             String userId = row.get("user_id").toString();
 
+            Button deleteButton = new Button("Delete");
+            deleteButton.setOnAction(e -> {
+                alert.setTitle("Delete Category");
+                alert.setHeaderText(row.get("id").toString());
+                alert.showAndWait();
+            });
+            // now i have to init it in table
+
             Expense expense = new Expense(description, amount, 0, date, userId);
             expenseList.add(expense);
         }
@@ -246,8 +334,69 @@ public class IndexController {
 
         this.totalLbl.setText("Total: " +  String.valueOf(sum));
         sexpensesTable.setItems(expenseList);
+
+        addDeleteButtonToTable();
     }
 
+
+    private  Boolean deleteBtnState = false;
+
+    // add delete btn to table
+    private void addDeleteButtonToTable() {
+        if (!deleteBtnState) {
+        TableColumn<Expense, Void> colBtn = new TableColumn<>("Delete");
+
+        Callback<TableColumn<Expense, Void>, TableCell<Expense, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<Expense, Void> call(final TableColumn<Expense, Void> param) {
+                return new TableCell<>() {
+                    private final Button btn = new Button("Delete");
+
+                    {
+                        btn.setOnAction((ActionEvent event) -> {
+                            Expense expense = getTableView().getItems().get(getIndex());
+                            // Perform delete logic here
+                            deleteExpence(expense.getDescription() , expense.getAmount());
+
+                        });
+                    }
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(btn);
+                        }
+                    }
+
+                };
+            }
+        };
+
+        colBtn.setCellFactory(cellFactory);
+        sexpensesTable.getColumns().add(colBtn);
+        deleteBtnState = true;
+    }
+    }
+
+
+    // Delete Expenses
+    public void deleteExpence(String description , Double amount)
+    {
+        String sql = "DELETE FROM expenses WHERE `description` = '" + description + "' AND `amount` = " + amount;
+        Boolean execute = DatabaseConnection.CUDExecute(sql);
+        if (execute) {
+            alert.setTitle("Delete");
+            alert.setHeaderText("Delete Expense successfully");
+            loadExpenses();
+            alert.showAndWait();
+        }
+    }
+
+
+    // Search btn clicked
     @FXML
     private void onSearchByDateClicked() {
 
@@ -263,11 +412,11 @@ public class IndexController {
 
 
         this.selectExpenceSQL = "SELECT * FROM expenses WHERE created_at BETWEEN '" + from + "' AND '" + to + "'"
-                + " AND user_id = '" + UserSession.getInstance().getUsername() + "'";
-            System.out.println(selectExpenceSQL);
+                + " AND user_id = '" + UserSession.getInstance().getUserId() + "'";
         loadExpenses();
     }
 
+    // Open Create Form
     @FXML
     private void onExpenceCreateBtnClicked(ActionEvent event)
     {
@@ -373,7 +522,7 @@ public class IndexController {
 
     }
 
-
+    // Save Expense to Database
     private void saveExpense(Expense expense) {
         String sql = "INSERT INTO `expenses` (`description`, `amount`, `category_id`,  `user_id`) VALUES ("
                 + "'" + expense.getDescription() + "', "
@@ -390,52 +539,42 @@ public class IndexController {
 
 
 
-//-------------------------------------------------------------------------------------
+    //------------------------- End Expenses Management Section -------------------------------------------------------
 
 
-    @FXML
-    protected void onCloseBtn() {
-        System.exit(0);
+
+
+
+
+
+
+
+    //------------------------- Report Management Section ------------------------------------------------------------
+
+
+    public void showReportsModal() {
+        Stage modalStage = new Stage();
+        modalStage.initModality(Modality.APPLICATION_MODAL);
+        modalStage.setTitle("Your Reports");
+
+        VBox modalLayout = new VBox(10);
+        modalLayout.setPadding(new Insets(20));
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+
+        VBox reportContainer = new VBox(10); // Cards will be added here
+        scrollPane.setContent(reportContainer);
+
+        modalLayout.getChildren().add(scrollPane);
+
+        // Load report cards into this container
+        loadReportsInto(reportContainer);
+
+        Scene modalScene = new Scene(modalLayout, 500, 600);
+        modalStage.setScene(modalScene);
+        modalStage.showAndWait();
     }
-
-
-    @FXML
-    protected void logout(ActionEvent event) throws IOException {
-        UserSession.clearSession(); // oturumu temizle
-
-        Parent root = FXMLLoader.load(getClass().getResource("auth.fxml")); // login sayfasını yükle
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-        stage.setScene(new Scene(root)); // yeni sahneyi ayarla
-        stage.show(); // sahneyi göster
-    }
-
-
-
-//--------------------------------------------------------------
-public void showReportsModal() {
-    Stage modalStage = new Stage();
-    modalStage.initModality(Modality.APPLICATION_MODAL);
-    modalStage.setTitle("Your Reports");
-
-    VBox modalLayout = new VBox(10);
-    modalLayout.setPadding(new Insets(20));
-
-    ScrollPane scrollPane = new ScrollPane();
-    scrollPane.setFitToWidth(true);
-
-    VBox reportContainer = new VBox(10); // Cards will be added here
-    scrollPane.setContent(reportContainer);
-
-    modalLayout.getChildren().add(scrollPane);
-
-    // Load report cards into this container
-    loadReportsInto(reportContainer);
-
-    Scene modalScene = new Scene(modalLayout, 500, 600);
-    modalStage.setScene(modalScene);
-    modalStage.showAndWait();
-}
 
 
     public void showCreateReportModal() {
@@ -519,7 +658,24 @@ public void showReportsModal() {
 
 
     private void createReport(String type, LocalDate start, LocalDate end) {
-        String reportData = "{\"summary\": \"Auto-generated " + type + " report\"}";
+
+        // run this to get between data
+        String get_expenses_sql = "SELECT * FROM `expenses` WHERE `user_id` = " + UserSession.getInstance().getUserId() +
+                " AND `created_at` BETWEEN '" + start.toString() + "' AND '" + end.toString() + "'";
+
+        String query = "SELECT * FROM `reports` WHERE `user_id` = " + UserSession.getInstance().getUserId() +
+                " AND `start_date` = '" + start.toString() + "' AND `end_date` = '" + end.toString() + "'";
+
+        List<Map<String, Object>> reportData = DatabaseConnection.SelectExecute(query);
+
+//        String sql = "INSERT INTO reports (`user_id`, `report_type`, `start_date`, `end_date`, `total_amount`, `expense_count`, `report_data`, `created_at`) VALUES("
+//                + UserSession.getInstance().getUserId() + ", '"
+//                + type + "', '"
+//                + start.toString() + "', '"
+//                + end.toString() + "', "
+//                + 100.0 + ", "
+//                + reportData.size() + ", '"
+//                + reportData + "', NOW())";
 
         String sql = "INSERT INTO reports (`user_id`, `report_type`, `start_date`, `end_date`, `total_amount`, `expense_count`, `report_data`, `created_at`) VALUES("
                 + UserSession.getInstance().getUserId() + ", '"
@@ -527,8 +683,8 @@ public void showReportsModal() {
                 + start.toString() + "', '"
                 + end.toString() + "', "
                 + 0.0 + ", "
-                + 0 + ", '"
-                + reportData + "', NOW())";
+                +"0"+ ", '"
+                + "0" + "', NOW())";
         Boolean state =  DatabaseConnection.CUDExecute(sql);
         if (state) {
             showAlert("Report created successfully.");
@@ -536,15 +692,12 @@ public void showReportsModal() {
         else {
             showAlert("Report creation failed.");
         }
+
     }
 
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Info");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
+
+    //------------------------- End Report Management Section ------------------------------------------------------------
+
 
 
 

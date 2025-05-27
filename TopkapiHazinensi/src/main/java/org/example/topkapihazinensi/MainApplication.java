@@ -22,7 +22,7 @@ public class MainApplication extends Application {
     }
 
 
-    // Splash Screen by ımage vıew
+    // Splash Screen by image vıew
     private  void splashScreen()
     {
         Image splashImage = new Image(getClass().getResource("images/splash.jpg").toExternalForm());
@@ -63,6 +63,8 @@ public class MainApplication extends Application {
         new Thread(sleeper).start();
     }
 
+
+
     // Call Auth(Login & Register) page
     private void authPage()  {
         try {
@@ -84,5 +86,7 @@ public class MainApplication extends Application {
             System.out.println(e.getMessage());
         }
     }
+
+
 
 }

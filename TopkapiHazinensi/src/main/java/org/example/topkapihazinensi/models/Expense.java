@@ -4,10 +4,11 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class Expense {
+
     private final SimpleStringProperty description;
     private final SimpleDoubleProperty amount;
     private final SimpleStringProperty date;
-    private int category_id;  // Removed final for setter support
+    private int category_id;
     private final SimpleStringProperty userId;
 
     public Expense(String description, double amount, int category_id, String date, String userId) {

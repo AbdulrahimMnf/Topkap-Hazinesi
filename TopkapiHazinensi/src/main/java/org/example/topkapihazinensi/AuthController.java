@@ -20,14 +20,17 @@ import java.util.Map;
 
 public class AuthController  {
 
-    @FXML
-    public TextField registerNameField;
 
     @FXML
     private  TextField emailField;
 
     @FXML
     private  TextField  passwordField;
+
+
+
+    @FXML
+    public TextField registerNameField;
 
     @FXML
     private  TextField registerEmailField;
@@ -55,7 +58,7 @@ public class AuthController  {
 
         if (email.isEmpty() || password.isEmpty())
         {
-            alert = new Alert(Alert.AlertType.ERROR);
+
             alert.setTitle("Error");
             alert.setContentText("Please enter a valid email address");
         }
@@ -77,7 +80,6 @@ public class AuthController  {
             }
         }
     }
-
 
 
     @FXML
